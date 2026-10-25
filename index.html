@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1d2b">
+<title>سكينة — أصوات للراحة</title>
+<style>
+:root{
+  --bg1:#0b1622; --bg2:#14283a; --ink:#e8f0f4; --muted:#8fa6b5; --card:rgba(255,255,255,.06);
+  --line:rgba(255,255,255,.12); --accent:#7fd1c0; --accent2:#a9b8ff; --warn:#ffb4a2;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{
+  font-family:"Segoe UI","Noto Naskh Arabic","Noto Sans Arabic",Tahoma,system-ui,sans-serif;
+  color:var(--ink);
+  background:radial-gradient(1200px 700px at 80% -10%,#1d3a52 0%,transparent 60%),
+             radial-gradient(900px 600px at 0% 110%,#233252 0%,transparent 55%),
+             linear-gradient(180deg,var(--bg1),var(--bg2));
+  background-attachment:fixed;
+  padding:max(20px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom));
+}
+.wrap{max-width:520px;margin:0 auto}
+.hidden{display:none!important}
+header{text-align:center;padding:28px 0 8px}
+h1{font-size:30px;font-weight:600;letter-spacing:.02em}
+.sub{color:var(--muted);margin-top:6px;font-size:15px;line-height:1.7}
+
+/* breathing orb */
+.orb{width:120px;height:120px;margin:26px auto 8px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#bff3e6,var(--accent) 45%,#3a8f9a 100%);
+  box-shadow:0 0 60px rgba(127,209,192,.35),0 0 140px rgba(127,209,192,.15);
+  animation:breathe 8s ease-in-out infinite}
+.orb.idle{animation-duration:12s;opacity:.85}
+@keyframes breathe{0%,100%{transform:scale(.86)}50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.orb{animation:none}}
+
+/* lock */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:20px;backdrop-filter:blur(6px)}
+label{display:block;font-size:14px;color:var(--muted);margin-bottom:10px}
+input.code{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;color:var(--ink);
+  font:600 22px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;text-align:center;padding:16px 8px;direction:ltr;text-transform:uppercase}
+input.code:focus{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;cursor:pointer;color:inherit}
+.primary{width:100%;margin-top:14px;padding:15px;border:0;border-radius:14px;font-size:17px;font-weight:600;
+  background:linear-gradient(135deg,var(--accent),#6fb7e0);color:#07202a}
+.primary:disabled{opacity:.6}
+.kb{font-size:13px;line-height:1.7;color:var(--accent2);margin:-2px 0 10px}
+.kb.alert{color:var(--warn);font-weight:600}
+.msg{min-height:24px;margin-top:12px;font-size:14.5px;text-align:center;line-height:1.6}
+.msg.err{color:var(--warn)}
+.note{margin-top:16px;color:var(--muted);font-size:13.5px;line-height:1.8;text-align:center}
+
+/* player */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.snd{position:relative;text-align:right;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;transition:.25s;min-height:104px}
+.snd.on{border-color:var(--accent);background:rgba(127,209,192,.12);box-shadow:0 0 0 1px rgba(127,209,192,.25) inset}
+.snd .t{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:600;width:100%;background:none;border:0;text-align:right}
+.snd .dot{width:10px;height:10px;border-radius:50%;background:var(--line);flex:none;transition:.25s}
+.snd.on .dot{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.snd .d{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.snd input[type=range]{margin-top:10px;width:100%}
+.snd:not(.on) input[type=range]{display:none}
+.snd.loading{opacity:.6}
+
+input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:6px;background:rgba(255,255,255,.18);direction:ltr}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);border:0;box-shadow:0 0 0 4px rgba(127,209,192,.35)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ink);border:0}
+.row{display:flex;align-items:center;gap:14px}
+.row b{font-weight:600;min-width:64px}
+.row input{flex:1}
+.timers{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;font-size:14.5px}
+.chip.sel{background:var(--accent2);color:#12183a;border-color:transparent;font-weight:600}
+.left{margin-top:10px;font-size:14px;color:var(--accent);min-height:20px}
+.stop{width:100%;margin-top:16px;padding:14px;border-radius:14px;border:1px solid var(--line);background:transparent;font-size:16px}
+.tip{margin-top:20px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="orb idle" id="orb" aria-hidden="true"></div>
+    <h1>سكينة</h1>
+    <p class="sub" id="sub">أصوات هادئة تخفف التوتر وتمنح العقل راحة</p>
+  </header>
+
+  <!-- شاشة إدخال الرمز -->
+  <main id="lock" class="hidden">
+    <form class="panel" id="form" autocomplete="off">
+      <label for="code">أدخل رمز الدخول الخاص بك</label>
+      <div class="kb" id="kb">الرمز بأحرف إنجليزية وأرقام. بدّل لوحة المفاتيح إلى English بالضغط على أيقونة الكرة الأرضية.</div>
+      <input class="code" id="code" lang="en" dir="ltr" inputmode="text" autocorrect="off" maxlength="14" placeholder="XXXX-XXXX-XXXX" spellcheck="false" autocapitalize="characters">
+      <button class="primary" id="go" type="submit">دخول</button>
+      <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    </form>
+    <p class="note">كل رمز يُستخدم لمرة واحدة فقط ويرتبط بجهازك عند أول دخول.<br>لذلك احتفظ به لنفسك ولا تشاركه مع أحد.</p>
+  </main>
+
+  <!-- المشغّل -->
+  <main id="player" class="hidden">
+    <div class="grid" id="grid"></div>
+
+    <section class="panel">
+      <div class="row"><b>الصوت</b><input type="range" id="master" min="0" max="100" value="70" aria-label="مستوى الصوت العام"></div>
+    </section>
+
+    <section class="panel">
+      <b>إيقاف تلقائي</b>
+      <div class="timers" id="timers"></div>
+      <div class="left" id="left"></div>
+    </section>
+
+    <button class="stop" id="stopAll">إيقاف كل الأصوات</button>
+    <p class="tip">يمكنك خلط أكثر من صوت معًا، مثل المطر مع النار.<br>خذ شهيقًا عميقًا مع تمدد الدائرة، وزفيرًا مع انكماشها.</p>
+  </main>
+</div>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+  const SOUNDS = [
+    {id:'rain',  name:'مطر هادئ',     desc:'قطرات خفيفة على النافذة'},
+    {id:'waves', name:'أمواج البحر',  desc:'مدّ وجزر بطيء'},
+    {id:'wind',  name:'نسيم',         desc:'هواء ناعم بين الأشجار'},
+    {id:'fire',  name:'نار دافئة',    desc:'طقطقة حطب في ليلة باردة'},
+    {id:'pad',   name:'صفاء',         desc:'نغمة عميقة ثابتة للتأمل'},
+    {id:'bowls', name:'أجراس التأمل', desc:'رنين ينساب ببطء'},
+    {id:'night', name:'ليل ساكن',     desc:'صراصير وهدوء المساء'}
+  ];
+
+  /* ---------- الدخول ---------- */
+  const lock=$('lock'), player=$('player'), msg=$('msg'), code=$('code'), go=$('go');
+
+  function show(which){
+    lock.classList.toggle('hidden', which!=='lock');
+    player.classList.toggle('hidden', which!=='player');
+    if(which==='player'){ $('orb').classList.remove('idle'); $('sub').textContent='اختر صوتًا أو أكثر، ثم استرخِ'; initPlayer(); }
+  }
+
+  fetch('/api/session',{cache:'no-store'}).then(r=>r.json()).then(j=>show(j.ok?'player':'lock')).catch(()=>show('lock'));
+
+  code.addEventListener('input',()=>{
+    const ar=/[\u0600-\u06FF]/.test(code.value);
+    $('kb').classList.toggle('alert',ar);
+    if(ar){ msg.className='msg err'; msg.textContent='هذه أحرف عربية. بدّل لوحة المفاتيح إلى الإنجليزية ثم اكتب الرمز.'; }
+    else if(msg.classList.contains('err')) { msg.className='msg'; msg.textContent=''; }
+    let v=code.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
+    code.value=v.replace(/(.{4})(?=.)/g,'$1-');
+  });
+
+  $('form').addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    msg.className='msg'; msg.textContent='';
+    if(code.value.replace(/-/g,'').length!==12){ msg.className='msg err'; msg.textContent=code.value.length===0?'اكتب الرمز أولًا. تأكد أن لوحة المفاتيح إنجليزية.':'الرمز مكوّن من 12 خانة، تأكد من كتابته كاملًا.'; return; }
+    go.disabled=true; go.textContent='لحظة...';
+    try{
+      const r=await fetch('/api/redeem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code.value})});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok){ show('player'); return; }
+      msg.className='msg err';
+      if(r.status===429) msg.textContent='محاولات كثيرة. انتظر عدة دقائق ثم حاول مجددًا.';
+      else if(j.error==='used') msg.textContent='هذا الرمز استُخدم من قبل على جهاز آخر. إن كان رمزك فتواصل مع البائع.';
+      else msg.textContent='الرمز غير صحيح. تأكد منه وحاول مجددًا.';
+    }catch{ msg.className='msg err'; msg.textContent='تعذّر الاتصال. تأكد من الإنترنت.'; }
+    go.disabled=false; go.textContent='دخول';
+  });
+
+  /* ---------- المشغّل ---------- */
+  let ctx=null, master=null, inited=false;
+  const state={}; // id -> {buf, src, gain, on, vol}
+  let timerEnd=0, timerHandle=null, tickHandle=null, fading=false;
+
+  function ensureCtx(){
+    if(!ctx){
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      master=ctx.createGain();
+      master.gain.value=$('master').value/100;
+      master.connect(ctx.destination);
+    }
+    if(ctx.state==='suspended') ctx.resume();
+  }
+
+  function initPlayer(){
+    if(inited) return; inited=true;
+    const grid=$('grid');
+    SOUNDS.forEach(s=>{
+      state[s.id]={on:false,vol:0.8,buf:null,src:null,gain:null};
+      const el=document.createElement('div');
+      el.className='snd'; el.id='c-'+s.id;
+      el.innerHTML=`<button class="t" type="button" aria-pressed="false"><span class="dot"></span><span>${s.name}</span></button>
+        <div class="d">${s.desc}</div>
+        <input type="range" min="5" max="100" value="80" aria-label="مستوى ${s.name}">`;
+      grid.appendChild(el);
+      el.querySelector('.t').addEventListener('click',()=>toggle(s.id));
+      el.querySelector('input').addEventListener('input',(e)=>{
+        const st=state[s.id]; st.vol=e.target.value/100;
+        if(st.gain) st.gain.gain.setTargetAtTime(st.vol,ctx.currentTime,0.05);
+      });
+    });
+    $('master').addEventListener('input',(e)=>{ ensureCtx(); fading=false; master.gain.setTargetAtTime(e.target.value/100,ctx.currentTime,0.05); });
+
+    const tm=$('timers');
+    [[0,'بدون'],[15,'15 دقيقة'],[30,'30 دقيقة'],[60,'ساعة'],[120,'ساعتان']].forEach(([m,l],i)=>{
+      const b=document.createElement('button'); b.type='button'; b.className='chip'+(i===0?' sel':''); b.textContent=l;
+      b.addEventListener('click',()=>{ [...tm.children].forEach(c=>c.classList.remove('sel')); b.classList.add('sel'); setTimer(m); });
+      tm.appendChild(b);
+    });
+    $('stopAll').addEventListener('click',stopAll);
+  }
+
+  async function load(id){
+    const st=state[id]; if(st.buf) return st.buf;
+    const r=await fetch('/audio/'+id+'.wav');
+    if(r.status===401){ location.reload(); throw new Error('locked'); }
+    if(!r.ok) throw new Error('fail');
+    const ab=await r.arrayBuffer();
+    st.buf=await new Promise((res,rej)=>ctx.decodeAudioData(ab,res,rej));
+    return st.buf;
+  }
+
+  async function toggle(id){
+    ensureCtx();
+    const st=state[id], el=$('c-'+id), btn=el.querySelector('.t');
+    if(st.on){ stopSound(id); return; }
+    el.classList.add('loading');
+    try{
+      const buf=await load(id);
+      if(fading){ fading=false; master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setValueAtTime($('master').value/100,ctx.currentTime); }
+      const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+      const g=ctx.createGain(); g.gain.value=0;
+      src.connect(g); g.connect(master); src.start();
+      g.gain.setTargetAtTime(st.vol,ctx.currentTime,0.8);
+      st.src=src; st.gain=g; st.on=true;
+      el.classList.add('on'); btn.setAttribute('aria-pressed','true');
+    }catch(e){ if(e.message!=='locked') alert('تعذّر تحميل الصوت. تأكد من الاتصال وحاول مجددًا.'); }
+    el.classList.remove('loading');
+  }
+
+  function stopSound(id,fast){
+    const st=state[id], el=$('c-'+id);
+    if(st.src){
+      const s=st.src,g=st.gain;
+      g.gain.setTargetAtTime(0,ctx.currentTime,fast?0.05:0.6);
+      setTimeout(()=>{ try{s.stop();}catch{} s.disconnect(); g.disconnect(); }, fast?300:3500);
+    }
+    st.src=null; st.gain=null; st.on=false;
+    el.classList.remove('on'); el.querySelector('.t').setAttribute('aria-pressed','false');
+  }
+
+  function stopAll(){ SOUNDS.forEach(s=>{ if(state[s.id].on) stopSound(s.id); }); clearTimer(true); }
+
+  function clearTimer(resetChips){
+    clearTimeout(timerHandle); clearInterval(tickHandle); timerEnd=0; $('left').textContent='';
+    if(resetChips){ const c=$('timers').children; [...c].forEach((x,i)=>x.classList.toggle('sel',i===0)); }
+  }
+
+  function setTimer(min){
+    clearTimer(false);
+    if(!min) return;
+    timerEnd=Date.now()+min*60000;
+    const upd=()=>{
+      const left=Math.max(0,timerEnd-Date.now()), m=Math.floor(left/60000), s=Math.floor(left%60000/1000);
+      $('left').textContent='سيتوقف الصوت بعد '+m+':'+String(s).padStart(2,'0');
+    };
+    upd(); tickHandle=setInterval(upd,1000);
+    timerHandle=setTimeout(()=>{
+      clearInterval(tickHandle);
+      $('left').textContent='يتلاشى الصوت بهدوء...';
+      fading=true;
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setValueAtTime(master.gain.value,ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0,ctx.currentTime+20);
+      setTimeout(()=>{ if(!fading) return; fading=false; SOUNDS.forEach(s=>{ if(state[s.id].on) stopSound(s.id,true); }); master.gain.value=$('master').value/100; clearTimer(true); },20500);
+    },min*60000);
+  }
+})();
+</script>
+</body>
+</html>
